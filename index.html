@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+</head>
+
+<body>
+<h2>Test Member Signup</h2>
+<form action="auth/signup" method="POST" enctype="multipart/form-data">
+    <label for="">name</label>
+    <input type="text" name="name" id="name" value="patricia">
+    <label for="">email</label>
+    <input type="text" name="email" id="email" value="patricia@gmail.com">
+    <label for="">contact</label>
+    <input type="text" name="contact" id="contact" value="7201234567">
+    <label for="">username</label>
+    <input type="text" name="username" id="username" value="patricia">
+    <label for="">password</label>
+    <input type="text" name="password" id="password" value="patricia">
+    <label for="">userType</label>
+    <select name="userType" id="userType">
+        <option value="Student">Student</option>
+        <option selected value="Mentor">Mentor</option>
+    </select>
+    <label for="">Profile Picture</label>
+    <input type="file" name="profilePicture" id="profilePicture">
+    <button type="submit">Submit</button>
+</form>
+<br/><br/>
+<h2>Test Add Post</h2>
+<form action="api/posts" method="POST" enctype="multipart/form-data">
+    <label for="">Select sender</label>
+    <select name="postedBy" id="postedBy"></select>
+    <label for="">title</label>
+    <input type="text" name="title" id="title" value="Test">
+    <label for="">description</label>
+    <input type="text" name="description" id="description" value="Test">
+    <label for="">Attachment</label>
+    <input type="file" name="attachment" id="attachment">
+    <button type="submit">Submit</button>
+</form>
+<br/><br/>
+<h2>Test Send Message</h2>
+<form action="api/messages" method="POST" enctype="multipart/form-data">
+    <label for="">Select student</label>
+    <select name="studentId" id="studentId"></select>
+    <label for="">Select mentor</label>
+    <select name="mentorId" id="mentorId"></select>
+    <label for="">message</label>
+    <input type="text" name="message" id="message" value="Test">
+    <label for="">Attachment</label>
+    <input type="file" name="attachment" id="attachment">
+    <button type="submit">Submit</button>
+</form>
+
+</body>
+<script>
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var response = JSON.parse(this.responseText)
+            var text = "<option value=''>Select Mentor</option>"
+            for (var i = 0; i < response.length; i++) {
+                var temp = "<option value='" + response[i].username + "'>" + response[i].username + "</option>";
+                text += temp
+            }
+            document.getElementById("postedBy").innerHTML = text;
+            document.getElementById("mentorId").innerHTML = text;
+        }
+    };
+    xhttp.open("GET", "/api/mentors", true);
+    xhttp.send();
+
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var response = JSON.parse(this.responseText)
+            var text = "<option value=''>Select Student</option>"
+            for (var i = 0; i < response.length; i++) {
+                var temp = "<option value='" + response[i].username + "'>" + response[i].username + "</option>";
+                text += temp
+            }
+            document.getElementById("studentId").innerHTML = text;
+        }
+    };
+    xhttp.open("GET", "/api/students", true);
+    xhttp.send();
+</script>
+
+</html>
