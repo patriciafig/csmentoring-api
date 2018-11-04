@@ -8,8 +8,8 @@ var passport = require('passport');
 var session = require('express-session');
 
 var mongoose = require('mongoose');
-//mongoose.connect('mongodb://root:mainroot1@ds157599.mlab.com:57599/heroku_gl4nd1gd');
-mongoose.connect('mongodb://localhost:27017/csm');
+mongoose.connect('mongodb://root:mainroot1@ds157599.mlab.com:57599/heroku_gl4nd1gd');
+//mongoose.connect('mongodb://localhost:27017/csm');
 //mongoose.connect('mongodb://localhost/27017/csm', { useMongoClient: true }); // use to run locally
 
 require('./models/models');
