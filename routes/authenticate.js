@@ -24,12 +24,13 @@ module.exports = function(passport) {
 
     //sends successful login state back to the angular
     router.get('/success', function(req, res) {
+        /*
         if (req.user.userType === 'Student') {
             let student = req.students.find(function(element) {
                 return element.username === req.user.username;
             });
 
-            res.send({ state: 'success', user: "Hi!"/*student ? student : null*/});
+            res.send({ state: 'success', user: student ? student : null});
         } else if (req.user.userType === 'Mentor') {
             let mentor = req.mentors.find(function(element) {
                 return element.username === req.user.username;
@@ -38,7 +39,9 @@ module.exports = function(passport) {
             res.send({ state: 'success', user: mentor ? mentor : null});
         } else {
             res.send({ state: 'failure', user: null, message: "userType was not Student or Mentor" });
-        }
+        }*/
+
+        res.send({ state: 'success', user: req.user ? req.user : null});
     });
 
     //sends failure login state back to angular
