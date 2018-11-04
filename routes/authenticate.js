@@ -29,7 +29,7 @@ module.exports = function(passport) {
                 return element.username === req.user.username;
             });
 
-            res.send({ state: 'success', user: student ? student : null});
+            res.send({ state: 'success', user: "Hi"/*student ? student : null*/});
         } else if (req.user.userType === 'Mentor') {
             let mentor = req.mentors.find(function(element) {
                 return element.username === req.user.username;
