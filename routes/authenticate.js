@@ -41,6 +41,7 @@ module.exports = function(passport) {
             res.send({ state: 'failure', user: null, message: "userType was not Student or Mentor" });
         }*/
 
+        console.log("Here");
         res.send({ state: 'success', user: req.user ? req.user : null});
     });
 
