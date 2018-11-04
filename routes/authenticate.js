@@ -22,9 +22,9 @@ function getExtension(filename) {
 
 module.exports = function(passport) {
 
-    //sends successful login state back to the angulr
+    //sends successful login state back to the angular
     router.get('/success', function(req, res) {
-        res.send({ state: 'success', user: req.user ? req.user : null });
+        res.send({ state: 'success', user: req.user/* ? req.user : null */});
     });
 
     //sends failure login state back to angular
@@ -37,7 +37,7 @@ module.exports = function(passport) {
         successRedirect: '/auth/success',
         failureRedirect: '/auth/failure'
     }));
-    var saveTo = ''
+    var saveTo = '';
     //sign up
     router.post('/signup', function(req, res) {
         var busboy = new Busboy({ headers: req.headers });
@@ -126,7 +126,7 @@ module.exports = function(passport) {
                                 }
                             })
                         }
-                        console.log(input.username + ' Registration succesful');
+                        console.log(input.username + ' Registration successful');
                         res.send(user);
                     });
                 }
