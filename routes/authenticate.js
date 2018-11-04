@@ -25,19 +25,25 @@ module.exports = function(passport) {
     //sends successful login state back to the angular
     router.get('/success', function(req, res) {
         if (req.user.userType === 'Student') {
-            let student = req.students.find(function(element) {
-                return element.username === req.user.username;
+            Student.findOne({'username': req.user.username}, function(err, student) {
+                if (err) {
+                    console.log('Could not find a Student with the username ' + req.user.username)
+                    res.send(err);
+                } else {
+                    res.send({ state: 'success', id: student._id, user: req.user})
+                }
             });
-
-            res.send({ state: 'success', user: student});
         } else if (req.user.userType === 'Mentor') {
-            let mentor = req.mentors.find(function(element) {
-                return element.username === req.user.username;
+            Mentor.findOne({'username': req.user.username}, function(err, student) {
+                if (err) {
+                    console.log('Could not find a Mentor with the username ' + req.user.username)
+                    res.send(err);
+                } else {
+                    res.send({ state: 'success', id: student._id, user: req.user})
+                }
             });
-
-            res.send({ state: 'success', user: mentor});
         } else {
-            res.send({state: 'failure', user: null, message: "userType is not Student or Mentor"});
+            res.send({state: 'failure', user: null, message: "userType is not Student or Mentor, instead was " + req.user.userType});
         }
     });
 
@@ -54,99 +60,79 @@ module.exports = function(passport) {
     var saveTo = '';
     //sign up
     router.post('/signup', function(req, res) {
-        var busboy = new Busboy({ headers: req.headers });
-        var input = new Object();
-        busboy.on('file', function(fieldname, file, filename, encoding, mimetype) {
-            var extension = getExtension(filename);
-            saveTo = path.join(__basedir + '/uploads/' + input.username + '-' + filename)
-            file.pipe(fs.createWriteStream(saveTo));
-            saveTo = __basedir + '/uploads/' + input.username + '-' + new Date().getTime() + '.' + extension
-            input["profilePicture"] = '/uploads/' + input.username + '-' + new Date().getTime() + '.' + extension;
-            fs.rename(__basedir + '/uploads/' + input.username + '-' + filename, saveTo, function(err) {
-                if (err) console.log('ERROR: ' + err);
-            });
+        User.findOne({ 'username': req.body.username }, function(err, user) {
+            // In case of any error, return using the done method
+            if (err) {
+                console.log('Error in SignUp: ' + err);
+                s.unlinkSync(saveTo);
+                res.send(err)
+            }
+            // already exists
+            if (user) {
+                console.log('User already exists with username: ' + req.body.username);
+                fs.unlinkSync(saveTo);
+                res.send("User already exists with username:" + req.body.username)
+            } else {
+                // if there is no user, create the user
+                var newUser = new User();
 
+                // set the user's local credentials
+                newUser.username = req.body.username;
+                newUser.password = createHash(req.body.password);
+                newUser.userType = req.body.userType;
+                // save the user
+                newUser.save(function(err, user) {
+                    if (err) {
+                        console.log('Error in Saving user: ' + err);
+                        res.send(err);
+                        fs.unlinkSync(saveTo);
+                    }
+                    if (req.body.userType === "Student") {
+                        var newStudent = new Student();
+                        newStudent.username = req.body.username;
+                        newStudent.name = req.body.name;
+                        newStudent.email = req.body.email;
+                        newStudent.contact = req.body.contact;
+                        newStudent.profilePicture = req.body.profilePicture;
+                        newStudent.about = '';
+                        newStudent.grade = '';
+                        newStudent.interests = [];
+                        newStudent.mentors = [];
+                        newStudent.save(function(err, student) {
+                            if (err) {
+                                console.log("Student not created.");
+                                s.unlinkSync(saveTo);
+                            } else {
+                                console.log("Student created.")
+                            }
+
+                        })
+                    } else if (req.body.userType === "Mentor") {
+                        var newMentor = new Mentor();
+                        newMentor.username = req.body.username;
+                        newMentor.name = req.body.name;
+                        newMentor.email = req.body.email;
+                        newMentor.contact = req.body.contact;
+                        newMentor.profilePicture = req.body.profilePicture;
+                        newMentor.about = '';
+                        newMentor.position = '';
+                        newMentor.interests = [];
+                        newMentor.students = [];
+                        newMentor.save(function(err, mentor) {
+                            if (err) {
+                                console.log(err);
+                                console.log("Mentor not created.");
+                                s.unlinkSync(saveTo);
+                            } else {
+                                console.log("Mentor created.")
+                            }
+                        })
+                    }
+                    console.log(req.body.username + ' Registration successful');
+                    res.send(user);
+                });
+            }
         });
-        busboy.on('field', function(fieldname, val, fieldnameTruncated, valTruncated, encoding, mimetype) {
-            input[fieldname] = inspect(val).replace(/\'/g, "");;
-        });
-        busboy.on('finish', function() {
-            User.findOne({ 'username': input.username }, function(err, user) {
-                // In case of any error, return using the done method
-                if (err) {
-                    console.log('Error in SignUp: ' + err);
-                    s.unlinkSync(saveTo);
-                    res.send(err)
-                }
-                // already exists
-                if (user) {
-                    console.log('User already exists with username: ' + input.username);
-                    fs.unlinkSync(saveTo);
-                    res.send("User already exists with username:" + input.username)
-                } else {
-
-                    // if there is no user, create the user
-                    var newUser = new User();
-
-                    // set the user's local credentials
-                    newUser.username = input.username;
-                    newUser.password = createHash(input.password);
-                    newUser.userType = input.userType;
-                    // save the user
-                    newUser.save(function(err, user) {
-                        if (err) {
-                            console.log('Error in Saving user: ' + err);
-                            res.send(err);
-                            fs.unlinkSync(saveTo);
-                        }
-                        if (input.userType == "Student") {
-                            var newStudent = new Student();
-                            newStudent.username = input.username;
-                            newStudent.name = input.name;
-                            newStudent.email = input.email;
-                            newStudent.contact = input.contact;
-                            newStudent.profilePicture = input.profilePicture;
-                            newStudent.about = '';
-                            newStudent.grade = '';
-                            newStudent.interests = [];
-                            newStudent.mentors = [];
-                            newStudent.save(function(err, student) {
-                                if (err) {
-                                    console.log("Student not created.")
-                                    s.unlinkSync(saveTo);
-                                } else {
-                                    console.log("Student created.")
-                                }
-
-                            })
-                        } else if (input.userType == "Mentor") {
-                            var newMentor = new Mentor();
-                            newMentor.username = input.username;
-                            newMentor.name = input.name;
-                            newMentor.email = input.email;
-                            newMentor.contact = input.contact;
-                            newMentor.profilePicture = input.profilePicture;
-                            newMentor.about = '';
-                            newMentor.position = '';
-                            newMentor.interests = [];
-                            newMentor.students = [];
-                            newMentor.save(function(err, mentor) {
-                                if (err) {
-                                    console.log(err)
-                                    console.log("Mentor not created.")
-                                    s.unlinkSync(saveTo);
-                                } else {
-                                    console.log("Mentor created.")
-                                }
-                            })
-                        }
-                        console.log(input.username + ' Registration successful');
-                        res.send(user);
-                    });
-                }
-            });
-        });
-        req.pipe(busboy);
     });
 
     //log out

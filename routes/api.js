@@ -58,6 +58,7 @@ router.route('/users')
 //get list of all students
 router.route('/students')
     .get(function(req, res) {
+        console.log('Here');
         Student.find(function(err, students) {
             if (err) {
                 return res.writeHead(500, err);
