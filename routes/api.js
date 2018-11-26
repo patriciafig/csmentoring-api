@@ -291,45 +291,21 @@ router.route('/mentorMeetings/:mentorId')
         });
     });
 
-var saveTo = '';
-//create new post and get all posts
+//create new meeting and get all meetings
 router.route('/posts')
     .post(function(req, res) {
-        saveTo = '';
-        var busboy = new Busboy({ headers: req.headers });
-        var input = new Object();
-        busboy.on('file', function(fieldname, file, filename, encoding, mimetype) {
-            var extension = getExtension(filename);
-            saveTo = path.join(__basedir + '/attachments/' + input.postedBy + '-' + filename);
-            file.pipe(fs.createWriteStream(saveTo));
-            saveTo = __basedir + '/attachments/' + input.postedBy + '-' + new Date().getTime() + '.' + extension;
-            input["attachment"] = '/attachments/' + input.postedBy + '-' + new Date().getTime() + '.' + extension;
-            fs.rename(__basedir + '/attachments/' + input.postedBy + '-' + filename, saveTo, function(err) {
-                if (err) console.log('ERROR: ' + err);
-            });
-
-        });
-        busboy.on('field', function(fieldname, val, fieldnameTruncated, valTruncated, encoding, mimetype) {
-            input[fieldname] = inspect(val).replace(/\'/g, "");
-        });
-        busboy.on('finish', function() {
-            var newPost = new Post();
-            newPost.postedBy = input.postedBy;
-            newPost.title = input.title;
-            newPost.description = input.description;
-            newPost.attachment = input.attachment;
-            newPost.postTime = new Date();
-            newPost.comments = [];
-            newPost.save(function(err, post) {
-                if (err) {
-                    return res.send(err);
-                    fs.unlinkSync(saveTo);
-                }
-                return res.json(post)
-            })
-        });
-        req.pipe(busboy);
-
+        var newPost = new Post();
+        newPost.postedBy = req.body.postedBy;
+        newPost.title = req.body.title;
+        newPost.description = req.body.description;
+        newPost.postTime = new Date()
+        newPost.comments = []
+        newPost.save(function(err, post) {
+            if (err) {
+                return res.send(err)
+            }
+            return res.json(post)
+        })
     })
     .get(function(req, res) {
         Post.find(function(err, posts) {
@@ -345,61 +321,7 @@ router.route('/posts')
                 return res.send(err);
             return res.send("all posts deleted");
         });
-    });
-
-
-//create new post and get all posts
-router.route('/messages')
-    .post(function(req, res) {
-        saveTo = '';
-        var busboy = new Busboy({ headers: req.headers });
-        var input = new Object();
-        busboy.on('file', function(fieldname, file, filename, encoding, mimetype) {
-            var extension = getExtension(filename);
-            saveTo = path.join(__basedir + '/attachments/' + input.studentId + '-' + input.mentorId + '-' + filename);
-            file.pipe(fs.createWriteStream(saveTo));
-            saveTo = __basedir + '/attachments/' + input.studentId + '-' + input.mentorId + '-' + new Date().getTime() + '.' + extension;
-            input["attachment"] = '/attachments/' + input.studentId + '-' + input.mentorId + '-' + new Date().getTime() + '.' + extension;
-            fs.rename(__basedir + '/attachments/' + input.studentId + '-' + input.mentorId + '-' + filename, saveTo, function(err) {
-                if (err) console.log('ERROR: ' + err);
-            });
-
-        });
-        busboy.on('field', function(fieldname, val, fieldnameTruncated, valTruncated, encoding, mimetype) {
-            input[fieldname] = inspect(val).replace(/\'/g, "");
-        });
-        busboy.on('finish', function() {
-            var newMessage = new Message();
-            newMessage.studentId = input.studentId;
-            newMessage.mentorId = input.mentorId;
-            newMessage.message = input.message;
-            newMessage.attachment = input.attachment;
-            newMessage.save(function(err, message) {
-                if (err) {
-                    return res.send(err);
-                    fs.unlinkSync(saveTo);
-                }
-                return res.json(message);
-            })
-        });
-        req.pipe(busboy);
     })
-    .get(function(req, res) {
-        Message.find(function(err, messages) {
-            if (err) {
-                return res.writeHead(500, err);
-            }
-            return res.send(messages);
-        });
-    })
-    .delete(function(req, res) {
-        Message.remove({}, function(err) {
-            if (err)
-                return res.send(err);
-            return res.send("all messages deleted");
-        });
-    });
-
 
 //get details of a particular post
 router.route('/posts/:postId')
@@ -409,21 +331,21 @@ router.route('/posts/:postId')
                 res.send(err);
             res.json(post);
         });
-    });
+    })
 
 router.route('/addComments/:postId')
     .put(function(req, res) {
         Post.findById(req.params.postId, function(err, post) {
             if (err)
                 res.send(err);
-            var tdate = new Date();
+            var tdate = new Date()
             var newComment = {
                 commentBody: req.body.commentBody,
                 commentBy: req.body.commentBy,
                 commentTime: tdate
-            };
-            var cmts = post.comments;
-            cmts.push(newComment);
+            }
+            var cmts = post.comments
+            cmts.push(newComment)
             post.comments = cmts;
             post.save(function(err, post) {
                 if (err)
@@ -432,7 +354,7 @@ router.route('/addComments/:postId')
                 res.json(post);
             });
         });
-    });
+    })
 
 router.route('/deleteComment/:postId/:commentId')
     .put(function(req, res) {
@@ -440,7 +362,7 @@ router.route('/deleteComment/:postId/:commentId')
             if (err)
                 res.send(err);
             for (var i = 0; i < post.comments.length; i++) {
-                if (post.comments[i]._id == req.params.commentId) {
+                if (post.comments[i]._id === req.params.commentId) {
                     post.comments.splice(i, 1)
                 }
             }
@@ -451,7 +373,6 @@ router.route('/deleteComment/:postId/:commentId')
                 res.json(post);
             });
         });
-    });
-
+    })
 
 module.exports = router;
