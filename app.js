@@ -76,8 +76,4 @@ app.use(function(err, req, res, next) {
     res.send(err)
 });
 
-http.createServer(app).listen(app.get('port'), app.get('ip'), function() {
-    console.log("✔ Express server listening at %s:%d ", app.get('ip'),app.get('port'));
-});
-
 module.exports = app;
