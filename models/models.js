@@ -47,6 +47,24 @@ var mentorSchema = new mongoose.Schema({
     }]
 })
 
+
+//Creates Student Schema
+var adminSchema = new mongoose.Schema({
+    username: String,
+    name: String,
+    email: String,
+    contact: Number,
+    profilePicture: String,
+    interests: [String],
+    mentors: [{
+        _id: String,
+        contact: Number,
+        email: String,
+        name: String,
+        username: String
+    }]
+})
+
 var meetingSchema = new mongoose.Schema({
     studentId: String,
     mentorId: String,
@@ -77,6 +95,7 @@ var postSchema = new mongoose.Schema({
 mongoose.model('User', userSchema);
 mongoose.model('Student', studentSchema);
 mongoose.model('Mentor', mentorSchema);
+mongoose.model('Admin', adminSchema);
 mongoose.model('Meeting', meetingSchema);
 mongoose.model('Post', postSchema);
 mongoose.model('Message', messageSchema);

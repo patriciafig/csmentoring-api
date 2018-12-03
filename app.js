@@ -7,10 +7,15 @@ var bodyParser = require('body-parser');
 var passport = require('passport');
 var session = require('express-session');
 
+
 var mongoose = require('mongoose');
 mongoose.connect('mongodb://root:mainroot1@ds157599.mlab.com:57599/heroku_gl4nd1gd');
-//mongoose.connect('mongodb://localhost/27017/csm', { useMongoClient: true }); // use to run locally
-
+//mongoose.connect('mongodb://localhost/27017/csm', { useMongoClient: true });
+// mongoose.connect('mongodb://localhost/mongoose_basics', (error) => {
+//     if(!error) {
+//         console.log("mongoose is connected now");
+//     }
+// }); // use to run locally
 
 
 require('./models/models');
@@ -20,6 +25,8 @@ var Busboy = require('busboy');
 var api = require('./routes/api');
 var authenticate = require('./routes/authenticate')(passport);
 var app = express();
+app.set('port', process.env.OPENSHIFT_NODEJS_PORT || process.env.PORT || 3002);
+app.set('ip', process.env.OPENSHIFT_NODEJS_IP || "127.0.0.1");
 global.__basedir = __dirname;
 
 //Set up app
@@ -40,7 +47,7 @@ app.use('/api', api);
 app.use('/auth', authenticate);
 
 app.get('/', function(req, res) {
-    res.sendFile(path.join(__dirname + '/index.html'));
+    res.sendFile(path.join(__dirname));
 })
 //Initialiaze passport
 var initPassport = require('./passport-init');
@@ -67,6 +74,10 @@ if (app.get('env') === 'development') {
 app.use(function(err, req, res, next) {
     res.status(err.status || 500);
     res.send(err)
+});
+
+http.createServer(app).listen(app.get('port'), app.get('ip'), function() {
+    console.log("✔ Express server listening at %s:%d ", app.get('ip'),app.get('port'));
 });
 
 module.exports = app;

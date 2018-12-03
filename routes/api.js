@@ -375,4 +375,41 @@ router.route('/deleteComment/:postId/:commentId')
         });
     })
 
+//endpoint for messaging
+router.route('/messages')
+    .post(function(req, res) {
+        var newMessage = new Message();
+        newMessage._id = new mongoose.Types.ObjectId(),
+            newMessage.attachment = req.body.attachment;
+        newMessage.message = req.body.message;
+        newMessage.studentId = req.body.studentId;
+        newMessage.mentorId = req.body.mentorId;
+        newMessage.postedBy = req.body.postedBy;
+
+        newMessage.save(function(err, post) {
+            if (err) {
+                return res.send(err)
+            }
+            return res.json(post)
+        });
+    })
+    .get(function(req, res) {
+        var filterParams = {};
+
+        if(req.query.studentId){
+            filterParams.studentId = req.query.studentId;
+        }
+
+        if(req.query.mentorId){
+            filterParams.mentorId = req.query.mentorId;
+        }
+
+        Message.find(filterParams, function(err, posts) {
+            if (err) {
+                return res.writeHead(500, err);
+            }
+            return res.send(posts);
+        });
+    })
+
 module.exports = router;
